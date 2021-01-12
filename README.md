@@ -42,7 +42,7 @@ This plugin developed by Unicaf LTD:
 
 https://www.unicaf.org/
 
-![Unicaf LTD](/pix/unicaf-logo.png?raw=true)
+![Unicaf LTD](/pix/unicaf_logo.png?raw=true)
 
 
 # Contribution
