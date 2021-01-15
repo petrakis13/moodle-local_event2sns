@@ -39,6 +39,10 @@ $observers = [
         'callback' => '\local_event2sns\event_handler::submission_graded',
     ],
     [
+        'eventname' => '\core\event\user_graded',
+        'callback' => '\local_event2sns\event_handler::user_graded',
+    ],
+    [
         'eventname' => '\core\event\course_module_created',
         'callback' => '\local_event2sns\event_handler::course_module_created',
     ],

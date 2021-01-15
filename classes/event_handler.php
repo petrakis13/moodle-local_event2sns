@@ -31,6 +31,7 @@ use core\event\course_module_created;
 use core\event\course_module_deleted;
 use core\event\course_module_updated;
 use core\event\grade_item_updated;
+use core\event\user_graded;
 use mod_assign\event\assessable_submitted;
 use mod_assign\event\submission_graded;
 use dml_exception;
@@ -86,7 +87,6 @@ class event_handler
      *
      * @param attempt_submitted $event
      * @throws dml_exception
-     * @throws coding_exception
      */
     public static function attempt_submitted(attempt_submitted $event)
     {
@@ -113,9 +113,45 @@ class event_handler
      *
      * @param submission_graded $event
      * @throws dml_exception
-     * @throws coding_exception
      */
     public static function submission_graded(submission_graded $event)
+    {
+        return;
+        global $DB;
+        $event_data = $event->get_data();
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
+
+        if (!$record) {
+            return;
+        }
+
+        $filters = [];
+        $filters['itemtype'] = 'mod';
+        $filters['itemmodule'] = 'assign';
+        $filters['iteminstance'] = $record->assignment;
+        $grade_item = $DB->get_record('grade_items', $filters,'*');
+
+        if (!$grade_item) {
+            return;
+        }
+
+        $data = [
+            'action' => 'submission_graded',
+            'grade_item_id' => $grade_item->id,
+            'user_id' => $record->userid,
+        ];
+
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * Triggers when user grade an assignment
+     *
+     * @param user_graded $event
+     * @throws dml_exception|coding_exception
+     */
+    public static function user_graded(user_graded $event)
     {
         global $DB;
         $event_data = $event->get_data();
@@ -125,14 +161,16 @@ class event_handler
             return;
         }
 
-        // TODO: Get the feedback comments from mdl_assignfeedback_comments
+        $grade_item = $event->get_grade()->get_record_data();
+
+        if ($grade_item->itemtype == 'course') {
+            return;
+        }
 
         $data = [
             'action' => 'submission_graded',
-            'instance_id' => $record->id,
+            'grade_item_id' => $grade_item->itemid,
             'user_id' => $record->userid,
-            'course_id' => $event_data['courseid'],
-            'module' => 'assign'
         ];
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
@@ -143,7 +181,6 @@ class event_handler
      *
      * @param course_module_created $event
      * @throws dml_exception
-     * @throws coding_exception
      */
     public static function course_module_created(course_module_created $event)
     {
@@ -175,7 +212,6 @@ class event_handler
      * Triggers when a module is getting deleted
      *
      * @param course_module_deleted $event
-     * @throws coding_exception
      */
     public static function course_module_deleted(course_module_deleted $event)
     {
@@ -200,7 +236,6 @@ class event_handler
      *
      * @param course_module_updated $event
      * @throws dml_exception
-     * @throws coding_exception
      */
     public static function course_module_updated(course_module_updated $event)
     {
@@ -232,7 +267,6 @@ class event_handler
      *
      * @param grade_item_updated $event
      * @throws dml_exception
-     * @throws coding_exception
      */
     public static function grade_item_updated(grade_item_updated $event)
     {
