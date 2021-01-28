@@ -129,7 +129,7 @@ class event_handler
         $filters['itemtype'] = 'mod';
         $filters['itemmodule'] = 'assign';
         $filters['iteminstance'] = $record->assignment;
-        $grade_item = $DB->get_record('grade_items', $filters,'*');
+        $grade_item = $DB->get_record('grade_items', $filters, '*');
 
         if (!$grade_item) {
             return;
@@ -163,7 +163,7 @@ class event_handler
 
         $grade_item = $event->get_grade()->get_record_data();
 
-        if ($grade_item->itemtype == 'course') {
+        if ($event->get_grade()->grade_item->itemtype == 'course') {
             return;
         }
 
