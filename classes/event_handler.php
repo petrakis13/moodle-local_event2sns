@@ -30,6 +30,7 @@ use coding_exception;
 use core\event\course_module_created;
 use core\event\course_module_deleted;
 use core\event\course_module_updated;
+use core\event\course_restored;
 use core\event\grade_item_updated;
 use core\event\user_graded;
 use mod_assign\event\assessable_submitted;
@@ -282,6 +283,17 @@ class event_handler
             'action' => 'module_updated',
             'module_type' => $record->itemmodule,
             'instanceid' => $record->iteminstance
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    public static function course_restored(course_restored $event) {
+        $event_data = $event->get_data();
+
+        $data = [
+            'action' => 'course_restored',
+            'courseid' => $event_data['objectid'],
         ];
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);

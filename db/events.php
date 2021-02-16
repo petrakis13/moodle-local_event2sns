@@ -58,4 +58,8 @@ $observers = [
         'eventname' => '\core\event\grade_item_updated',
         'callback' => '\local_event2sns\event_handler::grade_item_updated',
     ],
+    [
+        'eventname' => '\core\event\course_restored',
+        'callback' => '\local_event2sns\event_handler::course_restored',
+    ],
 ];
