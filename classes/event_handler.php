@@ -117,7 +117,6 @@ class event_handler
      */
     public static function submission_graded(submission_graded $event)
     {
-        return;
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
