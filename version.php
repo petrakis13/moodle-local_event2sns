@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2020122116;            // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version = 2023012705;            // The current plugin version (Date: YYYYMMDDXX)
 $plugin->release = '0.1';
 $plugin->requires = 2018051700;            // Requires this Moodle version.
 $plugin->component = 'local_event2sns';        // Full name of the plugin (used for diagnostics).
