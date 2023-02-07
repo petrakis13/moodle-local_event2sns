@@ -37,6 +37,7 @@ use mod_assign\event\assessable_submitted;
 use mod_assign\event\submission_graded;
 use dml_exception;
 use mod_quiz\event\attempt_submitted;
+use core\event\course_deleted;
 
 require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
 require_once($CFG->dirroot . '/local/event2sns/lib.php');
@@ -297,4 +298,23 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
+    
+    
+     /**
+     * Triggers when a course is getting deleted
+     *
+     * @param course_deleted $event
+     */
+    public static function course_deleted(course_deleted $event)
+    {
+        $event_data = $event->get_data();
+
+        $data = [
+            'action' => 'course_deleted',
+            'courseid' => $event_data['objectid'],
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+    
 }

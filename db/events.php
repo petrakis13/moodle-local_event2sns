@@ -62,4 +62,8 @@ $observers = [
         'eventname' => '\core\event\course_restored',
         'callback' => '\local_event2sns\event_handler::course_restored',
     ],
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback' => '\local_event2sns\event_handler::course_deleted',
+    ],    
 ];
