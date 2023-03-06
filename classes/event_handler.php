@@ -298,9 +298,8 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
-    
-    
-     /**
+
+    /**
      * Triggers when a course is getting deleted
      *
      * @param course_deleted $event
@@ -316,5 +315,144 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function user_override_updated($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
+
+        if (!$record) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $user = $DB->get_record('user', ['id' => $event_data['relateduserid']]);
+
+        if (!$user) {
+            return;
+        }
+
+        $data = [
+            'action' => 'update_student_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'userid' => $event_data['relateduserid'],
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function user_override_deleted($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $user = $DB->get_record('user', ['id' => $event_data['relateduserid']]);
+
+        if (!$user) {
+            return;
+        }
+
+        $data = [
+            'action' => 'delete_student_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'userid' => $event_data['relateduserid'],
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
     
+
+
+
+    /**
+     * @throws dml_exception
+     */
+    public static function group_override_updated($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']]);
+
+        if (!$record) {
+            return;
+        }
+
+        if(is_null($record->groupid)) {
+            return;
+        }
+
+        $group_members = $DB->get_records('groups_members', ['groupid' => $record->groupid]);
+
+        if(empty($group_members)) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $data = [
+            'action' => 'update_students_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'users' => array_column($group_members, 'userid'),
+            'courseid' => $event_data['courseid'],
+            'groupid' => $record->groupid
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function group_override_deleted($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        if(empty($event_data['other']['groupid'])) {
+            return;
+        }
+
+        $group_members = $DB->get_records('groups_members', ['groupid' => $event_data['other']['groupid']]);
+
+        if(empty($group_members)) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $data = [
+            'action' => 'delete_students_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'users' => array_column($group_members, 'userid'),
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
 }
