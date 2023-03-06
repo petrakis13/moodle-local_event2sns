@@ -23,6 +23,7 @@ sns messages
 * \core\event\course_module_deleted
 * \core\event\course_module_updated
 * \core\event\grade_item_updated 
+* \core\event\course_deleted
 
 ## Requirements
 *  Moodle 3.1 or greater

@@ -110,4 +110,8 @@ $observers = [
         'eventname' => '\mod_quiz\event\group_override_deleted',
         'callback' => '\local_event2sns\event_handler::group_override_deleted',
     ],
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback' => '\local_event2sns\event_handler::course_deleted',
+    ]
 ];

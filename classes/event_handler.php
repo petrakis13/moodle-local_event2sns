@@ -34,15 +34,10 @@ use core\event\course_restored;
 use core\event\grade_item_updated;
 use core\event\user_graded;
 use mod_assign\event\assessable_submitted;
-use mod_assign\event\group_override_created;
-use mod_assign\event\group_override_deleted;
-use mod_assign\event\group_override_updated;
 use mod_assign\event\submission_graded;
 use dml_exception;
-use mod_assign\event\user_override_created;
-use mod_assign\event\user_override_deleted;
-use mod_assign\event\user_override_updated;
 use mod_quiz\event\attempt_submitted;
+use core\event\course_deleted;
 
 require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
 require_once($CFG->dirroot . '/local/event2sns/lib.php');
@@ -69,7 +64,6 @@ class event_handler
      */
     public static function assessable_submitted(assessable_submitted $event)
     {
-        error_log('assessable_submitted');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -98,7 +92,6 @@ class event_handler
      */
     public static function attempt_submitted(attempt_submitted $event)
     {
-        error_log('attempt_submitted');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -125,7 +118,6 @@ class event_handler
      */
     public static function submission_graded(submission_graded $event)
     {
-        error_log('submission_graded');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -162,7 +154,6 @@ class event_handler
      */
     public static function user_graded(user_graded $event)
     {
-        error_log('user_graded');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -194,7 +185,6 @@ class event_handler
      */
     public static function course_module_created(course_module_created $event)
     {
-        error_log('course_module_created');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -226,7 +216,6 @@ class event_handler
      */
     public static function course_module_deleted(course_module_deleted $event)
     {
-        error_log('course_module_deleted');
         $event_data = $event->get_data();
 
         $module_name = $event_data['other']['modulename'];
@@ -251,7 +240,6 @@ class event_handler
      */
     public static function course_module_updated(course_module_updated $event)
     {
-        error_log('course_module_updated');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -283,7 +271,6 @@ class event_handler
      */
     public static function grade_item_updated(grade_item_updated $event)
     {
-        error_log('grade_item_updated');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -302,11 +289,27 @@ class event_handler
     }
 
     public static function course_restored(course_restored $event) {
-        error_log('course_restored');
         $event_data = $event->get_data();
 
         $data = [
             'action' => 'course_restored',
+            'courseid' => $event_data['objectid'],
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * Triggers when a course is getting deleted
+     *
+     * @param course_deleted $event
+     */
+    public static function course_deleted(course_deleted $event)
+    {
+        $event_data = $event->get_data();
+
+        $data = [
+            'action' => 'course_deleted',
             'courseid' => $event_data['objectid'],
         ];
 
@@ -376,6 +379,9 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
+    
+
+
 
     /**
      * @throws dml_exception
@@ -449,5 +455,4 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
-
 }
