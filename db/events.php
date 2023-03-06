@@ -62,4 +62,52 @@ $observers = [
         'eventname' => '\core\event\course_restored',
         'callback' => '\local_event2sns\event_handler::course_restored',
     ],
+    [
+        'eventname' => '\mod_assign\event\user_override_created',
+        'callback' => '\local_event2sns\event_handler::user_override_updated',
+    ],
+    [
+        'eventname' => '\mod_assign\event\user_override_updated',
+        'callback' => '\local_event2sns\event_handler::user_override_updated',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\user_override_created',
+        'callback' => '\local_event2sns\event_handler::user_override_updated',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\user_override_updated',
+        'callback' => '\local_event2sns\event_handler::user_override_updated',
+    ],
+    [
+        'eventname' => '\mod_assign\event\user_override_deleted',
+        'callback' => '\local_event2sns\event_handler::user_override_deleted',
+    ],
+    [
+        'eventname' => '\mod_assign\event\group_override_created',
+        'callback' => '\local_event2sns\event_handler::group_override_updated',
+    ],
+    [
+        'eventname' => '\mod_assign\event\group_override_updated',
+        'callback' => '\local_event2sns\event_handler::group_override_updated',
+    ],
+    [
+        'eventname' => '\mod_assign\event\group_override_deleted',
+        'callback' => '\local_event2sns\event_handler::group_override_deleted',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\user_override_deleted',
+        'callback' => '\local_event2sns\event_handler::user_override_deleted',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\group_override_created',
+        'callback' => '\local_event2sns\event_handler::group_override_updated',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\group_override_updated',
+        'callback' => '\local_event2sns\event_handler::group_override_updated',
+    ],
+    [
+        'eventname' => '\mod_quiz\event\group_override_deleted',
+        'callback' => '\local_event2sns\event_handler::group_override_deleted',
+    ],
 ];

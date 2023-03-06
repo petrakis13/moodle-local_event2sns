@@ -34,8 +34,14 @@ use core\event\course_restored;
 use core\event\grade_item_updated;
 use core\event\user_graded;
 use mod_assign\event\assessable_submitted;
+use mod_assign\event\group_override_created;
+use mod_assign\event\group_override_deleted;
+use mod_assign\event\group_override_updated;
 use mod_assign\event\submission_graded;
 use dml_exception;
+use mod_assign\event\user_override_created;
+use mod_assign\event\user_override_deleted;
+use mod_assign\event\user_override_updated;
 use mod_quiz\event\attempt_submitted;
 
 require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
@@ -63,6 +69,7 @@ class event_handler
      */
     public static function assessable_submitted(assessable_submitted $event)
     {
+        error_log('assessable_submitted');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -91,6 +98,7 @@ class event_handler
      */
     public static function attempt_submitted(attempt_submitted $event)
     {
+        error_log('attempt_submitted');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -117,6 +125,7 @@ class event_handler
      */
     public static function submission_graded(submission_graded $event)
     {
+        error_log('submission_graded');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -153,6 +162,7 @@ class event_handler
      */
     public static function user_graded(user_graded $event)
     {
+        error_log('user_graded');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -184,6 +194,7 @@ class event_handler
      */
     public static function course_module_created(course_module_created $event)
     {
+        error_log('course_module_created');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -215,6 +226,7 @@ class event_handler
      */
     public static function course_module_deleted(course_module_deleted $event)
     {
+        error_log('course_module_deleted');
         $event_data = $event->get_data();
 
         $module_name = $event_data['other']['modulename'];
@@ -239,6 +251,7 @@ class event_handler
      */
     public static function course_module_updated(course_module_updated $event)
     {
+        error_log('course_module_updated');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -270,6 +283,7 @@ class event_handler
      */
     public static function grade_item_updated(grade_item_updated $event)
     {
+        error_log('grade_item_updated');
         global $DB;
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
@@ -288,6 +302,7 @@ class event_handler
     }
 
     public static function course_restored(course_restored $event) {
+        error_log('course_restored');
         $event_data = $event->get_data();
 
         $data = [
@@ -297,4 +312,142 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function user_override_updated($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
+
+        if (!$record) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $user = $DB->get_record('user', ['id' => $event_data['relateduserid']]);
+
+        if (!$user) {
+            return;
+        }
+
+        $data = [
+            'action' => 'update_student_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'userid' => $event_data['relateduserid'],
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function user_override_deleted($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $user = $DB->get_record('user', ['id' => $event_data['relateduserid']]);
+
+        if (!$user) {
+            return;
+        }
+
+        $data = [
+            'action' => 'delete_student_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'userid' => $event_data['relateduserid'],
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function group_override_updated($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']]);
+
+        if (!$record) {
+            return;
+        }
+
+        if(is_null($record->groupid)) {
+            return;
+        }
+
+        $group_members = $DB->get_records('groups_members', ['groupid' => $record->groupid]);
+
+        if(empty($group_members)) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $data = [
+            'action' => 'update_students_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'users' => array_column($group_members, 'userid'),
+            'courseid' => $event_data['courseid'],
+            'groupid' => $record->groupid
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public static function group_override_deleted($event) {
+        global $DB;
+        $event_data = $event->get_data();
+
+        if(empty($event_data['other']['groupid'])) {
+            return;
+        }
+
+        $group_members = $DB->get_records('groups_members', ['groupid' => $event_data['other']['groupid']]);
+
+        if(empty($group_members)) {
+            return;
+        }
+
+        $components = [
+            'mod_assign' => 'assign',
+            'mod_quiz' => 'quiz'
+        ];
+
+        $data = [
+            'action' => 'delete_students_assessment_deadlines',
+            'module_type' => $components[$event_data['component']],
+            'assignid' => $event_data['other'][$components[$event_data['component']] . 'id'],
+            'users' => array_column($group_members, 'userid'),
+            'courseid' => $event_data['courseid']
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
 }
