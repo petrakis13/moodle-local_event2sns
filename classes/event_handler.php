@@ -285,6 +285,20 @@ class event_handler
             'instanceid' => $record->iteminstance
         ];
 
+        if (!empty($record->categoryid)) {
+            $category_item = $DB->get_record('grade_items',
+                [
+                    'itemtype' => 'category',
+                    'iteminstance' => $record->categoryid,
+                    'courseid' => $record->courseid,
+                ], '*');
+            if($category_item) {
+                $data['category'] = $category_item->iteminfo;
+            }
+        } else {
+            $data['category'] = NULL;
+        }
+
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
 
