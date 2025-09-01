@@ -10,6 +10,9 @@ $CFG->event2sns_topicarn = 'arn:aws:sns:us-central-1:9999999999999:my_cool_topic
 // This is a custom site id which will be used by the application / service will receive 
 // the message, in order to identify the source (from where that message came)
 $CFG->event2sns_siteid = 'my_custom_site_id';
+
+// to filter which users creation/update should be tracked. If value is * then all users are tracked, otherwise only the specified end of string
+$CFG->filter_even_user_suffix = 'your-custom-domain.org';
 ``` 
 
 ## Current Supported Events
@@ -24,6 +27,11 @@ sns messages
 * \core\event\course_module_updated
 * \core\event\grade_item_updated 
 * \core\event\course_deleted
+* \core\event\course_restored
+* \core\event\user_graded
+* \core\event\user_created
+* \core\event\user_updated
+
 
 ## Requirements
 *  Moodle 3.1 or greater
