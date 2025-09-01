@@ -12,7 +12,7 @@ $CFG->event2sns_topicarn = 'arn:aws:sns:us-central-1:9999999999999:my_cool_topic
 $CFG->event2sns_siteid = 'my_custom_site_id';
 
 // to filter which users creation/update should be tracked. If value is * then all users are tracked, otherwise only the specified end of string
-$CFG->filter_even_user_suffix = 'your-custom-domain.org';
+$CFG->filter_event_user_suffix = 'your-custom-domain.org';
 ``` 
 
 ## Current Supported Events
