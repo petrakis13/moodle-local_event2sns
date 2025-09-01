@@ -113,5 +113,13 @@ $observers = [
     [
         'eventname' => '\core\event\course_deleted',
         'callback' => '\local_event2sns\event_handler::course_deleted',
+    ],
+        [
+        'eventname' => '\core\event\user_created',
+        'callback' => '\local_event2sns\event_handler::user_created',
+    ],
+    [
+        'eventname' => '\core\event\user_updated',
+        'callback' => '\local_event2sns\event_handler::user_updated',
     ]
 ];
