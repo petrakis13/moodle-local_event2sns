@@ -33,6 +33,8 @@ use core\event\course_module_updated;
 use core\event\course_restored;
 use core\event\grade_item_updated;
 use core\event\user_graded;
+use core\event\user_created;
+use core\event\user_updated;
 use mod_assign\event\assessable_submitted;
 use mod_assign\event\submission_graded;
 use dml_exception;
@@ -469,4 +471,85 @@ class event_handler
 
         publish_sns_message($event->get_context(), 'lms_assignments', $data);
     }
+
+
+    /**
+     * Triggers when user is created
+     *
+     * @param user_created $event
+     * @throws dml_exception|coding_exception
+     */
+    public static function user_created(user_created $event)
+    {
+        global $DB;
+        global $CFG;
+
+        if (empty($CFG->filter_event_user_suffix)) {
+            return;
+        }
+
+
+        $event_data = $event->get_data();
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
+
+        if (!$record) {
+            return;
+        }
+
+        if($CFG->filter_event_user_suffix != '*') {
+            if (!str_ends_with($record->email, $CFG->filter_event_user_suffix)) {
+                return;
+            }
+        }
+
+        $data = [
+            'action' => 'user_created',
+            'user_id' => $record->id,
+            'email' => $record->email,
+            'username' => $record->username,
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    /**
+     * Triggers when user is updated
+     *
+     * @param user_updated $event
+     * @throws dml_exception|coding_exception
+     */
+    public static function user_updated(user_updated $event)
+    {
+        global $DB;
+        global $CFG;
+
+        if (empty($CFG->filter_event_user_suffix)) {
+            return;
+        }
+
+        $event_data = $event->get_data();
+        $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
+
+        if (!$record) {
+            return;
+        }
+
+        if($CFG->filter_event_user_suffix != '*') {
+            if (!str_ends_with($record->email, $CFG->filter_event_user_suffix)) {
+                return;
+            }
+        }
+
+        $data = [
+            'action' => 'user_updated',
+            'user_id' => $record->id,
+            'email' => $record->email,
+            'username' => $record->username,
+            'suspended' => $record->suspended,
+        ];
+
+        publish_sns_message($event->get_context(), 'lms_assignments', $data);
+    }
+
+    
 }
