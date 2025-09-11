@@ -55,7 +55,7 @@ class event_handler
      * Capture only those type of modules
      * @var string[]
      */
-    private static $assignment_modules = ['assign', 'quiz'];
+    private static $assignment_modules = ['assign', 'quiz', 'h5pactivity'];
 
     /**
      * Triggers when user submit a assignment
