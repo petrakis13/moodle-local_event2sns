@@ -35,7 +35,6 @@ sns messages
 
 ## Requirements
 *  Moodle 3.1 or greater
-*  local_aws plugin (can be found in Moodle Plugin Directory)
 
 ## Installation
 
