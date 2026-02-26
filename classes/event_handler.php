@@ -41,7 +41,7 @@ use dml_exception;
 use mod_quiz\event\attempt_submitted;
 use core\event\course_deleted;
 
-require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
+
 require_once($CFG->dirroot . '/local/event2sns/lib.php');
 
 /**
