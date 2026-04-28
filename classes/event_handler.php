@@ -277,7 +277,7 @@ class event_handler
         $event_data = $event->get_data();
         $record = $DB->get_record($event_data['objecttable'], ['id' => $event_data['objectid']], '*');
 
-        if ($record->itemtype != 'mod' or !in_array($record->itemmodule, ['assign', 'quiz'])) {
+        if ($record->itemtype != 'mod' or !in_array($record->itemmodule, ['assign', 'quiz', 'h5pactivity'])) {
             return;
         }
 
